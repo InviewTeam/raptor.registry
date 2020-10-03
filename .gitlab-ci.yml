@@ -12,9 +12,9 @@ registry_build:
 docker_build:
   stage: build
   image:
-    name: ubuntu-dind:14.04
+    name: gitlab/dind
   script:
-    - make docker
+    - docker build -f ./build/Dockerfile .
 
 golangci_lint:
   stage: test
