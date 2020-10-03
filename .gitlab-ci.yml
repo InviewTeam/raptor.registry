@@ -1,0 +1,32 @@
+stages:
+  - build
+  - test
+
+registry_build:
+  stage: build
+  image: 
+    name: golang:1.15.2
+  script:
+    - make
+
+docker_build:
+  stage: build
+  image:
+    name: gitlab/dind
+  script:
+    - make docker
+
+golangci_lint:
+  stage: test
+  image:
+    name: golang:1.15.2
+  script:
+    - go install github.com/golangci/golangci-lint/cmd/golangci-lint
+    - make lint
+
+unit_tests:
+  stage: test
+  image:
+    name: golang:1.15.2
+  script:
+    - make ut
