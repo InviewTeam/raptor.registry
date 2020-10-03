@@ -12,7 +12,7 @@ registry_build:
 docker_build:
   stage: build
   image:
-    name: gitlab/dind
+    name: ubuntu-dind:14.04
   script:
     - make docker
 
