@@ -1,6 +1,6 @@
 package task
 
-import "github.com/gofrs/uuid"
+import "github.com/google/uuid"
 
 type TaskList []Task
 
