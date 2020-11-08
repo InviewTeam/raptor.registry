@@ -13,23 +13,23 @@ import (
 	"gitlab.com/inview-team/raptor_team/registry/internal/server"
 )
 
-const (
-	addr        = "0.0.0.0:1337"
-	db_host     = "127.0.0.1:1338"
-	db_user     = "user"
-	db_pswd     = "password"
-	db_database = "default"
+var (
+	addr          = os.Getenv("REGISTRY_ADDR")
+	db_host       = os.Getenv("MONGO_HOST")
+	db_user       = os.Getenv("MONGO_USER")
+	db_pswd       = os.Getenv("MONGO_PWD")
+	db_database   = os.Getenv("MONGO_DBNAME")
+	db_collection = os.Getenv("MONGO_COLL")
 )
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	base, err := db.InitDB(db_host, db_user, db_pswd, db_database, ctx)
+	mongo, err := db.New(db_host, db_user, db_pswd, db_database, db_collection, ctx)
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to connecto to MongoDB: %w", err))
 	}
-	mongo := db.New(base)
 	registry := registry.New(mongo)
 
 	srv := server.New(addr, registry)

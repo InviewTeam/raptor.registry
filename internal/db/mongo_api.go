@@ -5,46 +5,70 @@ import (
 	"fmt"
 
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	//_ "gitlab.com/inview-team/raptor_team/registry/internal/db/migrations" // database migrations
 	"gitlab.com/inview-team/raptor_team/registry/task"
 
 	"github.com/google/uuid"
-	migrate "github.com/xakep666/mongo-migrate"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type MongoStorage struct {
-	db *mongo.Database
+	client *mongo.Client
+	db     *mongo.Database
+	coll   *mongo.Collection
 }
 
-func InitDB(host, user, password, database string, ctx context.Context) (*mongo.Database, error) {
-	url := fmt.Sprintf("mongodb://%s:%s@%s:27017", user, password, host)
+func New(host, user, password, database, coll string, ctx context.Context) (registry.Storage, error) {
+	url := fmt.Sprintf("mongodb://%s:%s@%s", user, password, host)
 	clientOptions := options.Client().ApplyURI(url)
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		return nil, err
 	}
+
 	err = client.Connect(ctx)
 	if err != nil {
 		return nil, err
 	}
 	db := client.Database(database)
-	migrate.SetDatabase(db)
-	if err := migrate.Up(migrate.AllAvailable); err != nil {
-		return nil, err
-	}
-	return db, nil
-}
 
-func New(db *mongo.Database) registry.Storage {
-	return &MongoStorage{db: db}
+	mongoSt := &MongoStorage{
+		client: client,
+		db:     db,
+		coll:   client.Database(database).Collection(coll),
+	}
+
+	return mongoSt, nil
 }
 
 func (m *MongoStorage) CreateTask(task *task.Task) (uuid.UUID, error) {
-	return uuid.New(), nil
+	id := uuid.New()
+	task.UUID = id
+	_, err := m.coll.InsertOne(context.TODO(), task)
+
+	return id, err
 }
 
 func (m *MongoStorage) GetTasks() ([]task.Task, error) {
-	return nil, nil
+	var tasks []task.Task
+	cur, err := m.coll.Find(context.Background(), bson.D{})
+	if err != nil {
+		return nil, err
+	}
+
+	defer cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var t task.Task
+		err := cur.Decode(&t)
+		tasks = append(tasks, t)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	return tasks, err
 }
