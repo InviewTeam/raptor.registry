@@ -29,6 +29,7 @@ unit_tests:
   image:
     name: golang:1.15.2
   script:
+    - go get -u github.com/jstemmer/go-junit-report
     - go test -v -count=1 -race -gcflags=-l -timeout=30s ./...  | go-junit-report -set-exit-code > report.xml
   artifacts:
     when: always
