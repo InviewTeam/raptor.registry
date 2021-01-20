@@ -64,6 +64,11 @@ func (s *Server) createNewTask(c *gin.Context) {
 		return
 	}
 
+	err = s.reg.SendTask(&task)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to send task": err.Error()})
+	}
+
 	c.JSON(http.StatusOK, gin.H{"uuid": id})
 }
 

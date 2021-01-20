@@ -10,16 +10,22 @@ import (
 
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 	"gitlab.com/inview-team/raptor_team/registry/internal/db"
+	"gitlab.com/inview-team/raptor_team/registry/internal/rabbitmq"
 	"gitlab.com/inview-team/raptor_team/registry/internal/server"
 )
 
 var (
-	addr          = os.Getenv("REGISTRY_ADDR")
+	addr = os.Getenv("REGISTRY_ADDR")
+
 	db_host       = os.Getenv("MONGO_HOST")
 	db_user       = os.Getenv("MONGO_USER")
 	db_pswd       = os.Getenv("MONGO_PWD")
 	db_database   = os.Getenv("MONGO_DBNAME")
 	db_collection = os.Getenv("MONGO_COLL")
+
+	rmq_addr = os.Getenv("RABBITMQ_ADDR")
+	rmq_exch = os.Getenv("RABBITMQ_EXCHANGE")
+	rmq_key  = os.Getenv("RABBITMQ_KEY")
 )
 
 func main() {
@@ -28,9 +34,21 @@ func main() {
 
 	mongo, err := db.New(db_host, db_user, db_pswd, db_database, db_collection, ctx)
 	if err != nil {
-		log.Fatal(fmt.Errorf("failed to connecto to MongoDB: %w", err))
+		log.Fatal(fmt.Errorf("failed to connect to MongoDB: %w", err))
 	}
-	registry := registry.New(mongo)
+	rmqConf := rabbitmq.Conf{
+		Address:  rmq_addr,
+		Exchange: rmq_exch,
+		Key:      rmq_key,
+	}
+	pub := rabbitmq.NewPublisher(&rmqConf)
+	err = pub.Connect()
+	if err != nil {
+		log.Fatal(fmt.Errorf("failed to connect publisher to RabbitMQ: %w", err))
+	}
+	defer pub.Close()
+
+	registry := registry.New(mongo, pub)
 
 	srv := server.New(addr, registry)
 

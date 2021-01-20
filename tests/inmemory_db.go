@@ -10,7 +10,7 @@ type InMemoryDB struct {
 	tasks []task.Task
 }
 
-func New() registry.Storage {
+func NewDB() registry.Storage {
 	return &InMemoryDB{
 		tasks: []task.Task{},
 	}

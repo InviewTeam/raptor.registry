@@ -22,7 +22,7 @@ type Response struct {
 
 var (
 	srv = Server{
-		reg: registry.New(tests.New()),
+		reg: registry.New(tests.NewDB(), &tests.Publisher{}),
 	}
 	router = srv.setupRouter()
 
