@@ -1,0 +1,15 @@
+{
+  "registry_address": "0.0.0.0:1337",
+  "database":
+  {
+    "address": "mongodb://admin:password@mongo",
+    "database": "default",
+    "collection": "tasks"
+  },
+  "rabbit":
+  {
+    "address": "amqp://rabbitmq:5672",
+    "worker_queue": "workers",
+    "analyzer_queue": "analyzers"
+  }
+}

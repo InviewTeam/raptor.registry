@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"fmt"
 
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
+	"gitlab.com/inview-team/raptor_team/registry/internal/config"
 	"gitlab.com/inview-team/raptor_team/registry/task"
 
 	"github.com/google/uuid"
@@ -19,9 +19,8 @@ type MongoStorage struct {
 	coll   *mongo.Collection
 }
 
-func New(host, user, password, database, coll string, ctx context.Context) (registry.Storage, error) {
-	url := fmt.Sprintf("mongodb://%s:%s@%s", user, password, host)
-	clientOptions := options.Client().ApplyURI(url)
+func New(conf *config.DatabaseConfig, ctx context.Context) (registry.Storage, error) {
+	clientOptions := options.Client().ApplyURI(conf.Address)
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		return nil, err
@@ -31,12 +30,12 @@ func New(host, user, password, database, coll string, ctx context.Context) (regi
 	if err != nil {
 		return nil, err
 	}
-	db := client.Database(database)
+	db := client.Database(conf.Database)
 
 	mongoSt := &MongoStorage{
 		client: client,
 		db:     db,
-		coll:   client.Database(database).Collection(coll),
+		coll:   client.Database(conf.Database).Collection(conf.Collection),
 	}
 
 	return mongoSt, nil

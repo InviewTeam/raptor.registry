@@ -12,27 +12,34 @@ import (
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 )
 
-type Conf struct {
-	Address  string
-	Exchange string
-	Key      string
-}
-
 type Publisher struct {
-	conf    *Conf
+	address string
 	conn    *amqp.Connection
 	channel *amqp.Channel
 	done    chan error
 }
 
-func NewPublisher(conf *Conf) registry.PublisherInterface {
+func NewPublisher(addr string) registry.PublisherInterface {
 	return &Publisher{
-		conf: conf,
-		done: make(chan error),
+		address: addr,
+		done:    make(chan error),
 	}
 }
 
-func (p *Publisher) Send(data []byte) error {
+func (p *Publisher) DeclareQueue(queue string) error {
+	_, err := p.channel.QueueDeclare(
+		queue,
+		false,
+		false,
+		true,
+		false,
+		nil,
+	)
+
+	return err
+}
+
+func (p *Publisher) Send(data []byte, queue string) error {
 	be := backoff.NewExponentialBackOff()
 	be.MaxElapsedTime = time.Minute
 	be.InitialInterval = 1 * time.Second
@@ -54,8 +61,8 @@ func (p *Publisher) Send(data []byte) error {
 				continue
 			}
 			err := p.channel.Publish(
-				p.conf.Exchange,
-				p.conf.Key,
+				"",
+				queue,
 				false,
 				false,
 				amqp.Publishing{
@@ -75,7 +82,7 @@ func (p *Publisher) Send(data []byte) error {
 }
 
 func (p *Publisher) Connect() error {
-	conn, err := amqp.Dial(p.conf.Address)
+	conn, err := amqp.Dial(p.address)
 	if err != nil {
 		return err
 	}
@@ -91,15 +98,7 @@ func (p *Publisher) Connect() error {
 		p.done <- errors.New("channel closed")
 	}()
 
-	return p.channel.ExchangeDeclare(
-		p.conf.Exchange,
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
+	return nil
 }
 
 func (p *Publisher) Close() error {

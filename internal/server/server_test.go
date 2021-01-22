@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
+	"gitlab.com/inview-team/raptor_team/registry/internal/config"
 	"gitlab.com/inview-team/raptor_team/registry/task"
 	"gitlab.com/inview-team/raptor_team/registry/tests"
 )
@@ -22,7 +23,7 @@ type Response struct {
 
 var (
 	srv = Server{
-		reg: registry.New(tests.NewDB(), &tests.Publisher{}),
+		reg: registry.New(&config.Settings{}, tests.NewDB(), &tests.Publisher{}),
 	}
 	router = srv.setupRouter()
 
