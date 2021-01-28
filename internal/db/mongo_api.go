@@ -17,6 +17,7 @@ type MongoStorage struct {
 	client *mongo.Client
 	db     *mongo.Database
 	coll   *mongo.Collection
+	opts   *options.DeleteOptions
 }
 
 func New(conf *config.DatabaseConfig, ctx context.Context) (registry.Storage, error) {
@@ -36,6 +37,11 @@ func New(conf *config.DatabaseConfig, ctx context.Context) (registry.Storage, er
 		client: client,
 		db:     db,
 		coll:   client.Database(conf.Database).Collection(conf.Collection),
+		opts: options.Delete().SetCollation(&options.Collation{
+			Locale:    "en_US",
+			Strength:  1,
+			CaseLevel: false,
+		}),
 	}
 
 	return mongoSt, nil
@@ -47,6 +53,11 @@ func (m *MongoStorage) CreateTask(task *task.Task) (uuid.UUID, error) {
 	_, err := m.coll.InsertOne(context.TODO(), task)
 
 	return id, err
+}
+
+func (m *MongoStorage) DeleteTask(id uuid.UUID) error {
+	_, err := m.coll.DeleteOne(context.TODO(), bson.D{{"uuid", id.String()}}, m.opts)
+	return err
 }
 
 func (m *MongoStorage) GetTasks() ([]task.Task, error) {

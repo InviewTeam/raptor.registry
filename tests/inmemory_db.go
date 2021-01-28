@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 	"gitlab.com/inview-team/raptor_team/registry/task"
@@ -25,4 +27,15 @@ func (im *InMemoryDB) CreateTask(task *task.Task) (uuid.UUID, error) {
 
 func (im *InMemoryDB) GetTasks() ([]task.Task, error) {
 	return im.tasks, nil
+}
+
+func (im *InMemoryDB) DeleteTask(id uuid.UUID) error {
+	for i, _ := range im.tasks {
+		if im.tasks[i].UUID == id {
+			im.tasks[i] = im.tasks[len(im.tasks)-1]
+			im.tasks = im.tasks[:len(im.tasks)-1]
+			return nil
+		}
+	}
+	return fmt.Errorf("no task with id %s", id.String())
 }

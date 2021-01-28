@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 	"gitlab.com/inview-team/raptor_team/registry/task"
 )
@@ -32,6 +33,7 @@ func (s *Server) setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.POST("/create", s.createNewTask)
 	r.GET("/tasks", s.getTasks)
+	r.DELETE("/delete/:uuid", s.deleteTask)
 
 	return r
 }
@@ -69,6 +71,22 @@ func (s *Server) createNewTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to send task": err.Error()})
 	}
 
+	c.JSON(http.StatusOK, gin.H{"uuid": id})
+}
+
+func (s *Server) deleteTask(c *gin.Context) {
+	id := c.Param("uuid")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to parse task UUID": err.Error()})
+		return
+	}
+
+	err = s.reg.DeleteTask(uuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to delete task": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"uuid": id})
 }
 

@@ -10,6 +10,7 @@ import (
 
 type Storage interface {
 	CreateTask(*task.Task) (uuid.UUID, error)
+	DeleteTask(uuid.UUID) error
 	GetTasks() ([]task.Task, error)
 }
 
@@ -36,6 +37,10 @@ func New(conf *config.Settings, st Storage, pub PublisherInterface) *Registry {
 
 func (r *Registry) CreateTask(task *task.Task) (uuid.UUID, error) {
 	return r.storage.CreateTask(task)
+}
+
+func (r *Registry) DeleteTask(id uuid.UUID) error {
+	return r.storage.DeleteTask(id)
 }
 
 func (r *Registry) SendTask(task *task.Task) error {
