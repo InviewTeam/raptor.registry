@@ -5,14 +5,19 @@ import (
 
 	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/task"
+	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
 )
 
 type Storage interface {
-	CreateTask(*task.Task) (uuid.UUID, error)
+	CreateTask(format.Task) (uuid.UUID, error)
 	DeleteTask(uuid.UUID) error
-	GetTaskByUUID(uuid.UUID) (task.Task, error)
-	GetTasks() ([]task.Task, error)
+	GetTaskByUUID(uuid.UUID) (format.Task, error)
+	GetTasks() ([]format.Task, error)
+
+	CreateAnalyzer(format.Analyzer) error
+	DeleteAnalyzer(string) error
+	GetAnalyzerByName(string) (format.Analyzer, error)
+	GetAnalyzers() ([]format.Analyzer, error)
 }
 
 type PublisherInterface interface {
@@ -36,7 +41,7 @@ func New(conf *config.Settings, st Storage, pub PublisherInterface) *Registry {
 	}
 }
 
-func (r *Registry) CreateTask(task *task.Task) (uuid.UUID, error) {
+func (r *Registry) CreateTask(task format.Task) (uuid.UUID, error) {
 	return r.storage.CreateTask(task)
 }
 
@@ -44,7 +49,7 @@ func (r *Registry) DeleteTask(id uuid.UUID) error {
 	return r.storage.DeleteTask(id)
 }
 
-func (r *Registry) SendTask(task *task.Task) error {
+func (r *Registry) SendTask(task *format.Task) error {
 	data, err := json.Marshal(task)
 	if err != nil {
 		return err
@@ -52,11 +57,11 @@ func (r *Registry) SendTask(task *task.Task) error {
 	return r.rmq.Send(data, r.conf.Rabbit.WorkerQueue)
 }
 
-func (r *Registry) GetTaskByUUID(id uuid.UUID) (task.Task, error) {
+func (r *Registry) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
 	return r.storage.GetTaskByUUID(id)
 }
 
-func (r *Registry) GetTasks() ([]task.Task, error) {
+func (r *Registry) GetTasks() ([]format.Task, error) {
 	return r.storage.GetTasks()
 }
 
@@ -66,4 +71,20 @@ func (r *Registry) StopTask(id uuid.UUID) error {
 		return err
 	}
 	return r.rmq.Send(req, r.conf.Rabbit.WorkerQueue)
+}
+
+func (r *Registry) GetAnalyzers() ([]format.Analyzer, error) {
+	return r.storage.GetAnalyzers()
+}
+
+func (r *Registry) GetAnalyzerByName(name string) (format.Analyzer, error) {
+	return r.storage.GetAnalyzerByName(name)
+}
+
+func (r *Registry) CreateAnalyzer(analyzer format.Analyzer) error {
+	return r.storage.CreateAnalyzer(analyzer)
+}
+
+func (r *Registry) DeleteAnalyzer(name string) error {
+	return r.storage.DeleteAnalyzer(name)
 }

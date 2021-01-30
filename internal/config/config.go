@@ -14,9 +14,11 @@ type RabbitConfig struct {
 }
 
 type DatabaseConfig struct {
-	Address    string `json:"address"`
-	Database   string `json:"database"`
-	Collection string `json:"collection"`
+	Address             string `json:"address"`
+	Database            string `json:"database"`
+	WorkersCollection   string `json:"workers_collection"`
+	AnalyzersCollection string `json:"analyzers_collection"`
+	ReportsCollection   string `json:"reports_collection"`
 }
 
 type Settings struct {

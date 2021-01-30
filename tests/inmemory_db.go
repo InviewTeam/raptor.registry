@@ -5,37 +5,37 @@ import (
 
 	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/task"
+	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
 )
 
 type InMemoryDB struct {
-	tasks []task.Task
+	tasks []format.Task
 }
 
 func NewDB() registry.Storage {
 	return &InMemoryDB{
-		tasks: []task.Task{},
+		tasks: []format.Task{},
 	}
 }
 
-func (im *InMemoryDB) CreateTask(task *task.Task) (uuid.UUID, error) {
+func (im *InMemoryDB) CreateTask(task format.Task) (uuid.UUID, error) {
 	id := uuid.New()
 	task.UUID = id
-	im.tasks = append(im.tasks, *task)
+	im.tasks = append(im.tasks, task)
 	return id, nil
 }
 
-func (im *InMemoryDB) GetTasks() ([]task.Task, error) {
+func (im *InMemoryDB) GetTasks() ([]format.Task, error) {
 	return im.tasks, nil
 }
 
-func (im *InMemoryDB) GetTaskByUUID(id uuid.UUID) (task.Task, error) {
+func (im *InMemoryDB) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
 	for i := range im.tasks {
 		if im.tasks[i].UUID == id {
 			return im.tasks[i], nil
 		}
 	}
-	return task.Task{}, fmt.Errorf("no task with id %s", id.String())
+	return format.Task{}, fmt.Errorf("no task with id %s", id.String())
 }
 
 func (im *InMemoryDB) DeleteTask(id uuid.UUID) error {
@@ -47,4 +47,24 @@ func (im *InMemoryDB) DeleteTask(id uuid.UUID) error {
 		}
 	}
 	return fmt.Errorf("no task with id %s", id.String())
+}
+
+func (im *InMemoryDB) CreateAnalyzer(format.Analyzer) error {
+	//TODO: analyzer tests
+	return nil
+}
+
+func (im *InMemoryDB) DeleteAnalyzer(string) error {
+	//TODO: analyzer tests
+	return nil
+}
+
+func (im *InMemoryDB) GetAnalyzerByName(string) (format.Analyzer, error) {
+	//TODO: analyzer tests
+	return format.Analyzer{}, nil
+}
+
+func (im *InMemoryDB) GetAnalyzers() ([]format.Analyzer, error) {
+	//TODO: analyzer tests
+	return []format.Analyzer{}, nil
 }

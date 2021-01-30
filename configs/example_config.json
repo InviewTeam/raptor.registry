@@ -4,7 +4,9 @@
   {
     "address": "mongodb://admin:password@mongo",
     "database": "default",
-    "collection": "tasks"
+    "workers_collection": "tasks",
+    "analyzers_collection": "analyzers",
+    "reports_collection": "reports"
   },
   "rabbit":
   {

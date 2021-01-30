@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/task"
+	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
 )
 
 type Server struct {
@@ -31,11 +31,16 @@ func New(addr string, reg *registry.Registry) *Server {
 func (s *Server) setupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.POST("/create", s.createNewTask)
-	r.GET("/tasks", s.getTasks)
-	r.DELETE("/delete/:uuid", s.deleteTask)
-	r.DELETE("/stop/:uuid", s.stopTask)
-	r.GET("/tasks/:uuid", s.getTaskByUUID)
+	r.POST("/tasks/create", s.createNewTask)
+	r.GET("/tasks/get", s.getTasks)
+	r.DELETE("/tasks/delete/:uuid", s.deleteTask)
+	r.DELETE("/tasks/stop/:uuid", s.stopTask)
+	r.GET("/tasks/get/:uuid", s.getTaskByUUID)
+
+	r.POST("/analyzers/create", s.createAnalyzer)
+	r.GET("/analyzers/get", s.getAnalyzers)
+	r.DELETE("/analyzers/delete/:name", s.deleteAnalyzer)
+	r.GET("/analyzers/get/:name", s.getAnalyzerByName)
 
 	return r
 }
@@ -55,14 +60,14 @@ func (s *Server) createNewTask(c *gin.Context) {
 		return
 	}
 
-	task := task.Task{}
+	task := format.Task{}
 	err = json.Unmarshal(bodyBytes, &task)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to parse JSON": err.Error()})
 		return
 	}
 
-	id, err := s.reg.CreateTask(&task)
+	id, err := s.reg.CreateTask(task)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to create task": err.Error()})
 		return
@@ -130,4 +135,68 @@ func (s *Server) getTasks(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, tasks)
+}
+
+func (s *Server) getAnalyzers(c *gin.Context) {
+	analyzers, err := s.reg.GetAnalyzers()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to get analyzers": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, analyzers)
+}
+
+func (s *Server) getAnalyzerByName(c *gin.Context) {
+	name := c.Param("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "received empty analyzer name"})
+		return
+	}
+
+	analyzer, err := s.reg.GetAnalyzerByName(name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to get analyzer": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, analyzer)
+}
+
+func (s *Server) createAnalyzer(c *gin.Context) {
+	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to read request body": err.Error()})
+		return
+	}
+
+	analyzer := format.Analyzer{}
+	err = json.Unmarshal(bodyBytes, &analyzer)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to parse JSON": err.Error()})
+		return
+	}
+
+	err = s.reg.CreateAnalyzer(analyzer)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to create analyzer": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) deleteAnalyzer(c *gin.Context) {
+	name := c.Param("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "received empty analyzer name"})
+		return
+	}
+
+	err := s.reg.DeleteAnalyzer(name)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to delete analyzer": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
 }

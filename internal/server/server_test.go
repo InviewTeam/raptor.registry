@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/task"
+	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
 	"gitlab.com/inview-team/raptor_team/registry/tests"
 )
 
@@ -27,9 +27,9 @@ var (
 	}
 	router = srv.setupRouter()
 
-	task1 = task.Task{
+	task1 = format.Task{
 		CameraIP: "10.11.12.13",
-		Jobs: []task.Job{
+		Jobs: []format.Job{
 			{
 				Title: "job1",
 			},
@@ -39,9 +39,9 @@ var (
 		},
 	}
 
-	task2 = task.Task{
+	task2 = format.Task{
 		CameraIP: "92.138.141.54",
-		Jobs: []task.Job{
+		Jobs: []format.Job{
 			{
 				Title: "some_job_name",
 			},
@@ -62,7 +62,7 @@ func TestCreate(t *testing.T) {
 		body, err := json.Marshal(task1)
 		require.Nil(t, err)
 
-		w := performRequest(router, "POST", "/create", bytes.NewReader(body))
+		w := performRequest(router, "POST", "/tasks/create", bytes.NewReader(body))
 		require.Equal(t, http.StatusOK, w.Code)
 
 		resp := Response{}
@@ -75,7 +75,7 @@ func TestCreate(t *testing.T) {
 		body, err = json.Marshal(task2)
 		require.Nil(t, err)
 
-		w = performRequest(router, "POST", "/create", bytes.NewReader(body))
+		w = performRequest(router, "POST", "/tasks/create", bytes.NewReader(body))
 		require.Equal(t, http.StatusOK, w.Code)
 
 		err = json.Unmarshal(w.Body.Bytes(), &resp)
@@ -88,10 +88,10 @@ func TestCreate(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
-		w := performRequest(router, "GET", "/tasks", nil)
+		w := performRequest(router, "GET", "/tasks/get", nil)
 		require.Equal(t, http.StatusOK, w.Code)
 
-		received := []task.Task{}
+		received := []format.Task{}
 		err := json.Unmarshal(w.Body.Bytes(), &received)
 		require.Nil(t, err)
 
