@@ -59,3 +59,11 @@ func (r *Registry) GetTaskByUUID(id uuid.UUID) (task.Task, error) {
 func (r *Registry) GetTasks() ([]task.Task, error) {
 	return r.storage.GetTasks()
 }
+
+func (r *Registry) StopTask(id uuid.UUID) error {
+	req, err := json.Marshal(map[string]string{"uuid": id.String(), "status": "done"})
+	if err != nil {
+		return err
+	}
+	return r.rmq.Send(req, r.conf.Rabbit.WorkerQueue)
+}
