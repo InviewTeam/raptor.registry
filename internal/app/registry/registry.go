@@ -18,6 +18,9 @@ type Storage interface {
 	DeleteAnalyzer(string) error
 	GetAnalyzerByName(string) (format.Analyzer, error)
 	GetAnalyzers() ([]format.Analyzer, error)
+
+	AddReport(format.Report) error
+	GetReport(uuid.UUID) (format.Report, error)
 }
 
 type PublisherInterface interface {
@@ -87,4 +90,12 @@ func (r *Registry) CreateAnalyzer(analyzer format.Analyzer) error {
 
 func (r *Registry) DeleteAnalyzer(name string) error {
 	return r.storage.DeleteAnalyzer(name)
+}
+
+func (r *Registry) AddReport(rep format.Report) error {
+	return r.storage.AddReport(rep)
+}
+
+func (r *Registry) GetReport(id uuid.UUID) (format.Report, error) {
+	return r.storage.GetReport(id)
 }

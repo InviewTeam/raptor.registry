@@ -134,3 +134,15 @@ func (m *MongoStorage) DeleteAnalyzer(name string) error {
 	_, err := m.analyzers_coll.DeleteOne(context.TODO(), bson.D{{"name", name}}, m.opts)
 	return err
 }
+
+func (m *MongoStorage) AddReport(rep format.Report) error {
+	_, err := m.reports_coll.InsertOne(context.TODO(), rep)
+	return err
+}
+
+func (m *MongoStorage) GetReport(id uuid.UUID) (format.Report, error) {
+	var rep format.Report
+	//nolint:govet
+	err := m.reports_coll.FindOne(context.TODO(), bson.D{{"uuid", id.String()}}, options.FindOne()).Decode(&rep)
+	return rep, err
+}

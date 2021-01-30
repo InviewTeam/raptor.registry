@@ -42,6 +42,9 @@ func (s *Server) setupRouter() *gin.Engine {
 	r.DELETE("/analyzers/delete/:name", s.deleteAnalyzer)
 	r.GET("/analyzers/get/:name", s.getAnalyzerByName)
 
+	r.POST("/reports/add", s.addReport)
+	r.GET("/reports/get/:uuid", s.getReportByUUID)
+
 	return r
 }
 
@@ -94,6 +97,7 @@ func (s *Server) deleteTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to delete task": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"uuid": id})
 }
 
@@ -104,11 +108,13 @@ func (s *Server) stopTask(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to parse task UUID": err.Error()})
 		return
 	}
+
 	err = s.reg.StopTask(uuid)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"failed to delete task": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"failed to stop task": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"uuid": id})
 }
 
@@ -119,11 +125,13 @@ func (s *Server) getTaskByUUID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to parse task UUID": err.Error()})
 		return
 	}
+
 	task, err := s.reg.GetTaskByUUID(uuid)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"failed to delete task": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"failed to get task": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, task)
 }
 
@@ -198,5 +206,46 @@ func (s *Server) deleteAnalyzer(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"failed to delete analyzer": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) addReport(c *gin.Context) {
+	bodyBytes, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to read request body": err.Error()})
+		return
+	}
+
+	report := format.Report{}
+	err = json.Unmarshal(bodyBytes, &report)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to parse JSON": err.Error()})
+		return
+	}
+
+	err = s.reg.AddReport(report)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to add report": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+func (s *Server) getReportByUUID(c *gin.Context) {
+	id := c.Param("uuid")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to parse task UUID": err.Error()})
+		return
+	}
+
+	rep, err := s.reg.GetReport(uuid)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"failed to get report": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, rep)
 }

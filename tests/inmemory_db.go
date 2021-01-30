@@ -68,3 +68,11 @@ func (im *InMemoryDB) GetAnalyzers() ([]format.Analyzer, error) {
 	//TODO: analyzer tests
 	return []format.Analyzer{}, nil
 }
+
+func (im *InMemoryDB) AddReport(format.Report) error {
+	return nil
+}
+
+func (im *InMemoryDB) GetReport(uuid.UUID) (format.Report, error) {
+	return format.Report{}, nil
+}
