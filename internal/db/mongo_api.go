@@ -56,8 +56,16 @@ func (m *MongoStorage) CreateTask(task *task.Task) (uuid.UUID, error) {
 }
 
 func (m *MongoStorage) DeleteTask(id uuid.UUID) error {
+	//nolint:govet
 	_, err := m.coll.DeleteOne(context.TODO(), bson.D{{"uuid", id.String()}}, m.opts)
 	return err
+}
+
+func (m *MongoStorage) GetTaskByUUID(id uuid.UUID) (task.Task, error) {
+	var t task.Task
+	//nolint:govet
+	err := m.coll.FindOne(context.TODO(), bson.D{{"uuid", id.String()}}, options.FindOne()).Decode(&t)
+	return t, err
 }
 
 func (m *MongoStorage) GetTasks() ([]task.Task, error) {

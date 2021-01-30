@@ -11,6 +11,7 @@ import (
 type Storage interface {
 	CreateTask(*task.Task) (uuid.UUID, error)
 	DeleteTask(uuid.UUID) error
+	GetTaskByUUID(uuid.UUID) (task.Task, error)
 	GetTasks() ([]task.Task, error)
 }
 
