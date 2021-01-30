@@ -52,6 +52,10 @@ func (r *Registry) SendTask(task *task.Task) error {
 	return r.rmq.Send(data, r.conf.Rabbit.WorkerQueue)
 }
 
+func (r *Registry) GetTaskByUUID(id uuid.UUID) (task.Task, error) {
+	return r.storage.GetTaskByUUID(id)
+}
+
 func (r *Registry) GetTasks() ([]task.Task, error) {
 	return r.storage.GetTasks()
 }
