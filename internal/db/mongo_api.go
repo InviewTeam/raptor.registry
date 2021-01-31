@@ -65,6 +65,12 @@ func (m *MongoStorage) DeleteTask(id uuid.UUID) error {
 	return err
 }
 
+func (m *MongoStorage) UpdateTask(id uuid.UUID, key, value string) error {
+	//nolint:govet
+	_, err := m.workers_coll.UpdateOne(context.TODO(), bson.D{{"uuid", id}}, bson.D{{key, value}}, options.Update().SetUpsert(false))
+	return err
+}
+
 func (m *MongoStorage) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
 	var t format.Task
 	//nolint:govet

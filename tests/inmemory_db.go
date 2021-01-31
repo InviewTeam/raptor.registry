@@ -38,6 +38,19 @@ func (im *InMemoryDB) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
 	return format.Task{}, fmt.Errorf("no task with id %s", id.String())
 }
 
+func (im *InMemoryDB) UpdateTask(id uuid.UUID, key, value string) error {
+	if key != "status" {
+		return fmt.Errorf("unknown key %s", key)
+	}
+	for i := range im.tasks {
+		if im.tasks[i].UUID == id {
+			im.tasks[i].Status = value
+			return nil
+		}
+	}
+	return fmt.Errorf("no task with id %s", id.String())
+}
+
 func (im *InMemoryDB) DeleteTask(id uuid.UUID) error {
 	for i := range im.tasks {
 		if im.tasks[i].UUID == id {

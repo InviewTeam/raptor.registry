@@ -29,23 +29,12 @@ var (
 
 	task1 = format.Task{
 		CameraIP: "10.11.12.13",
-		Jobs: []format.Job{
-			{
-				Title: "job1",
-			},
-			{
-				Title: "job2",
-			},
-		},
+		Job:      "job1",
 	}
 
 	task2 = format.Task{
 		CameraIP: "92.138.141.54",
-		Jobs: []format.Job{
-			{
-				Title: "some_job_name",
-			},
-		},
+		Job:      "some_job_name",
 	}
 )
 
@@ -87,7 +76,7 @@ func TestCreate(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	t.Run("simple", func(t *testing.T) {
+	t.Run("get all", func(t *testing.T) {
 		w := performRequest(router, "GET", "/tasks/get", nil)
 		require.Equal(t, http.StatusOK, w.Code)
 
@@ -97,11 +86,45 @@ func TestGet(t *testing.T) {
 
 		require.Equal(t, 2, len(received))
 
+		task1.Status = "in work"
+		task2.Status = "in work"
+
 		if diff := deep.Equal(task1, received[0]); diff != nil {
 			t.Error(diff)
 		}
 
 		if diff := deep.Equal(task2, received[1]); diff != nil {
+			t.Error(diff)
+		}
+	})
+
+	t.Run("get by UUID", func(t *testing.T) {
+		w := performRequest(router, "GET", "/tasks/get/"+task1.UUID.String(), nil)
+		require.Equal(t, http.StatusOK, w.Code)
+		received := format.Task{}
+		err := json.Unmarshal(w.Body.Bytes(), &received)
+		require.Nil(t, err)
+		if diff := deep.Equal(task1, received); diff != nil {
+			t.Error(diff)
+		}
+	})
+}
+
+func TestDelete(t *testing.T) {
+	t.Run("simple", func(t *testing.T) {
+		w := performRequest(router, "DELETE", "/tasks/delete/"+task1.UUID.String(), nil)
+		require.Equal(t, http.StatusOK, w.Code)
+
+		w = performRequest(router, "GET", "/tasks/get", nil)
+		require.Equal(t, http.StatusOK, w.Code)
+
+		received := []format.Task{}
+		err := json.Unmarshal(w.Body.Bytes(), &received)
+		require.Nil(t, err)
+
+		require.Equal(t, 1, len(received))
+
+		if diff := deep.Equal(task2, received[0]); diff != nil {
 			t.Error(diff)
 		}
 	})

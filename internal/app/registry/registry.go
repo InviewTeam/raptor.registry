@@ -2,6 +2,7 @@ package registry
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/google/uuid"
 	"gitlab.com/inview-team/raptor_team/registry/internal/config"
@@ -11,6 +12,7 @@ import (
 type Storage interface {
 	CreateTask(format.Task) (uuid.UUID, error)
 	DeleteTask(uuid.UUID) error
+	UpdateTask(uuid.UUID, string, string) error
 	GetTaskByUUID(uuid.UUID) (format.Task, error)
 	GetTasks() ([]format.Task, error)
 
@@ -45,19 +47,29 @@ func New(conf *config.Settings, st Storage, pub PublisherInterface) *Registry {
 }
 
 func (r *Registry) CreateTask(task format.Task) (uuid.UUID, error) {
-	return r.storage.CreateTask(task)
+	task.Status = "in work"
+	id, err := r.storage.CreateTask(task)
+	if err != nil {
+		return id, err
+	}
+	data, err := json.Marshal(task)
+	if err != nil {
+		return id, err
+
+	}
+	return id, r.rmq.Send(data, r.conf.Rabbit.WorkerQueue)
 }
 
 func (r *Registry) DeleteTask(id uuid.UUID) error {
-	return r.storage.DeleteTask(id)
-}
-
-func (r *Registry) SendTask(task *format.Task) error {
-	data, err := json.Marshal(task)
+	err := r.storage.DeleteTask(id)
+	if err != nil {
+		log.Printf("failed to delete task: %s", err.Error())
+	}
+	req, err := json.Marshal(map[string]string{"uuid": id.String(), "status": "stopped"})
 	if err != nil {
 		return err
 	}
-	return r.rmq.Send(data, r.conf.Rabbit.WorkerQueue)
+	return r.rmq.Send(req, r.conf.Rabbit.WorkerQueue)
 }
 
 func (r *Registry) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
@@ -69,7 +81,11 @@ func (r *Registry) GetTasks() ([]format.Task, error) {
 }
 
 func (r *Registry) StopTask(id uuid.UUID) error {
-	req, err := json.Marshal(map[string]string{"uuid": id.String(), "status": "done"})
+	err := r.storage.UpdateTask(id, "status", "stopped")
+	if err != nil {
+		log.Printf("failed to change task status: %s", err.Error())
+	}
+	req, err := json.Marshal(map[string]string{"uuid": id.String(), "status": "stopped"})
 	if err != nil {
 		return err
 	}
