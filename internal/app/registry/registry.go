@@ -57,7 +57,7 @@ func (r *Registry) CreateTask(task format.Task) (uuid.UUID, error) {
 		return id, err
 
 	}
-	return id, r.rmq.Send(data, r.conf.Rabbit.WorkerQueue)
+	return id, r.rmq.Send(data, r.conf.WorkerQueue)
 }
 
 func (r *Registry) DeleteTask(id uuid.UUID) error {
@@ -69,7 +69,7 @@ func (r *Registry) DeleteTask(id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	return r.rmq.Send(req, r.conf.Rabbit.WorkerQueue)
+	return r.rmq.Send(req, r.conf.WorkerQueue)
 }
 
 func (r *Registry) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
@@ -89,7 +89,7 @@ func (r *Registry) StopTask(id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	return r.rmq.Send(req, r.conf.Rabbit.WorkerQueue)
+	return r.rmq.Send(req, r.conf.WorkerQueue)
 }
 
 func (r *Registry) GetAnalyzers() ([]format.Analyzer, error) {

@@ -22,8 +22,8 @@ type MongoStorage struct {
 	opts           *options.DeleteOptions
 }
 
-func New(conf *config.DatabaseConfig, ctx context.Context) (registry.Storage, error) {
-	clientOptions := options.Client().ApplyURI(conf.Address)
+func New(conf *config.Settings, ctx context.Context) (registry.Storage, error) {
+	clientOptions := options.Client().ApplyURI(conf.DatabaseAddress)
 	client, err := mongo.NewClient(clientOptions)
 	if err != nil {
 		return nil, err
@@ -33,14 +33,14 @@ func New(conf *config.DatabaseConfig, ctx context.Context) (registry.Storage, er
 	if err != nil {
 		return nil, err
 	}
-	db := client.Database(conf.Database)
+	db := client.Database(conf.DatabaseName)
 
 	mongoSt := &MongoStorage{
 		client:         client,
 		db:             db,
-		workers_coll:   client.Database(conf.Database).Collection(conf.WorkersCollection),
-		analyzers_coll: client.Database(conf.Database).Collection(conf.AnalyzersCollection),
-		reports_coll:   client.Database(conf.Database).Collection(conf.ReportsCollection),
+		workers_coll:   client.Database(conf.DatabaseName).Collection(conf.WorkersCollection),
+		analyzers_coll: client.Database(conf.DatabaseName).Collection(conf.AnalyzersCollection),
+		reports_coll:   client.Database(conf.DatabaseName).Collection(conf.ReportsCollection),
 		opts: options.Delete().SetCollation(&options.Collation{
 			Locale:    "en_US",
 			Strength:  1,

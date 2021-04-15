@@ -9,6 +9,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/caarlos0/env"
+	"github.com/joho/godotenv"
+
 	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
 	"gitlab.com/inview-team/raptor_team/registry/internal/config"
 	"gitlab.com/inview-team/raptor_team/registry/internal/db"
@@ -26,27 +29,32 @@ func init() {
 
 func main() {
 	flag.Parse()
-	conf, err := config.Init(cfgFile)
-	if err != nil {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("File .env not found, reading configuration from ENV")
+	}
+
+	var conf config.Settings
+	if err := env.Parse(&conf); err != nil {
 		log.Fatal(err)
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mongo, err := db.New(&conf.Database, ctx)
+	mongo, err := db.New(&conf, ctx)
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to connect to MongoDB: %w", err))
 	}
 
-	pub := rabbitmq.NewPublisher(conf.Rabbit.Address)
+	pub := rabbitmq.NewPublisher(conf.RMQAddress)
 	err = pub.Connect()
 	if err != nil {
 		log.Fatal(fmt.Errorf("failed to connect publisher to RabbitMQ: %w", err))
 	}
 	defer pub.Close()
 
-	registry := registry.New(conf, mongo, pub)
+	registry := registry.New(&conf, mongo, pub)
 
 	srv := server.New(conf.RegistryAddress, registry)
 
