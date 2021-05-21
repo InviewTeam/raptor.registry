@@ -19,7 +19,6 @@ type MongoStorage struct {
 	workers_coll   *mongo.Collection
 	analyzers_coll *mongo.Collection
 	reports_coll   *mongo.Collection
-	opts           *options.DeleteOptions
 }
 
 func New(conf *config.Settings, ctx context.Context) (registry.Storage, error) {
@@ -41,11 +40,6 @@ func New(conf *config.Settings, ctx context.Context) (registry.Storage, error) {
 		workers_coll:   client.Database(conf.DatabaseName).Collection(conf.WorkersCollection),
 		analyzers_coll: client.Database(conf.DatabaseName).Collection(conf.AnalyzersCollection),
 		reports_coll:   client.Database(conf.DatabaseName).Collection(conf.ReportsCollection),
-		opts: options.Delete().SetCollation(&options.Collation{
-			Locale:    "en_US",
-			Strength:  1,
-			CaseLevel: false,
-		}),
 	}
 
 	return mongoSt, nil
@@ -60,21 +54,18 @@ func (m *MongoStorage) CreateTask(task format.Task) (uuid.UUID, error) {
 }
 
 func (m *MongoStorage) DeleteTask(id uuid.UUID) error {
-	//nolint:govet
-	_, err := m.workers_coll.DeleteOne(context.TODO(), bson.D{{"uuid", id.String()}}, m.opts)
+	_, err := m.workers_coll.DeleteOne(context.TODO(), bson.M{"uuid": id.String()}, options.Delete())
 	return err
 }
 
 func (m *MongoStorage) UpdateTask(id uuid.UUID, key, value string) error {
-	//nolint:govet
-	_, err := m.workers_coll.UpdateOne(context.TODO(), bson.D{{"uuid", id}}, bson.D{{key, value}}, options.Update().SetUpsert(false))
+	_, err := m.workers_coll.UpdateOne(context.TODO(), bson.M{"uuid": id}, bson.M{key: value}, options.Update().SetUpsert(false))
 	return err
 }
 
 func (m *MongoStorage) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
 	var t format.Task
-	//nolint:govet
-	err := m.workers_coll.FindOne(context.TODO(), bson.D{{"uuid", id.String()}}, options.FindOne()).Decode(&t)
+	err := m.workers_coll.FindOne(context.TODO(), bson.M{"uuid": id.String()}, options.FindOne()).Decode(&t)
 	return t, err
 }
 
@@ -85,19 +76,7 @@ func (m *MongoStorage) GetTasks() ([]format.Task, error) {
 		return nil, err
 	}
 
-	defer cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var t format.Task
-		err := cur.Decode(&t)
-		if err != nil {
-			return nil, err
-		}
-		tasks = append(tasks, t)
-	}
-	if err := cur.Err(); err != nil {
-		return nil, err
-	}
-
+	err = cur.All(context.Background(), &tasks)
 	return tasks, err
 }
 
@@ -130,14 +109,12 @@ func (m *MongoStorage) CreateAnalyzer(analyzer format.Analyzer) error {
 
 func (m *MongoStorage) GetAnalyzerByName(name string) (format.Analyzer, error) {
 	var a format.Analyzer
-	//nolint:govet
-	err := m.analyzers_coll.FindOne(context.TODO(), bson.D{{"name", name}}, options.FindOne()).Decode(&a)
+	err := m.analyzers_coll.FindOne(context.TODO(), bson.M{"name": name}, options.FindOne()).Decode(&a)
 	return a, err
 }
 
 func (m *MongoStorage) DeleteAnalyzer(name string) error {
-	//nolint:govet
-	_, err := m.analyzers_coll.DeleteOne(context.TODO(), bson.D{{"name", name}}, m.opts)
+	_, err := m.analyzers_coll.DeleteOne(context.TODO(), bson.M{"name": name}, options.Delete())
 	return err
 }
 
@@ -148,7 +125,6 @@ func (m *MongoStorage) AddReport(rep format.Report) error {
 
 func (m *MongoStorage) GetReport(id uuid.UUID) (format.Report, error) {
 	var rep format.Report
-	//nolint:govet
-	err := m.reports_coll.FindOne(context.TODO(), bson.D{{"uuid", id.String()}}, options.FindOne()).Decode(&rep)
+	err := m.reports_coll.FindOne(context.TODO(), bson.M{"uuid": id.String()}, options.FindOne()).Decode(&rep)
 	return rep, err
 }

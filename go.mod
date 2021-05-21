@@ -1,6 +1,6 @@
 module gitlab.com/inview-team/raptor_team/registry
 
-go 1.15
+go 1.16
 
 require (
 	github.com/caarlos0/env v3.5.0+incompatible
