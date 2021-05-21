@@ -53,5 +53,5 @@ jobs:
         push: ${{ endsWith(github.ref, '/master') || endsWith(github.ref, '/dev') }}
         run: |
           make docker
-          docker tag registry docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }}
+          docker tag raptor/registry docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }}
           docker push docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }}
