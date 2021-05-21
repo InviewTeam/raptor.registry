@@ -64,5 +64,5 @@ jobs:
         if: github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/dev'
         run: |
           make docker && \
-          docker tag raptor/registry docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }} && \
-          docker push docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }}
+          docker tag raptor/registry docker.pkg.github.com/${{ github.repository }}/registry:${GITHUB_REF##*/}-${{ github.sha }} && \
+          docker push docker.pkg.github.com/${{ github.repository }}/registry:${GITHUB_REF##*/}-${{ github.sha }}
