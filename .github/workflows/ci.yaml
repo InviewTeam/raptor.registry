@@ -36,10 +36,24 @@ jobs:
             ${{ runner.os }}-go-
       - name: Install dependencies
         run: go mod download
-      - name: Lint
-        run: make lint
+      - name: Unit tests
+        run: make ut
+  Lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: GolangCI Lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
   publish:
-    name: Push Docker image to GitHub Packages
+    name: Publish Docker image
+    needs: |
+      build
+      test
+      lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
