@@ -50,7 +50,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build container image
-        push: ${{ endsWith(github.ref, '/master') || endsWith(github.ref, '/dev') }}
+        if: github.ref == 'refs/heads/master' ||  github.ref == 'refs/heads/dev'
         run: |
           make docker
           docker tag raptor/registry docker.pkg.github.com/${{ github.repository }}/registry:${{ github.ref }}-${{ github.sha }}
