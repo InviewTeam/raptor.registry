@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: registry_config
+data:
+  REGISTRY_ADDRESS: "0.0.0.0:10006"
+  MONGO_ADDRESS: "mongodb://admin:password@mongo"
+  MONGO_DB_NAME: "default"
+  WORKERS_COLLECTION: "tasks"
+  ANALYZERS_COLLECTION: "analyzers"
+  REPORTS_COLLECTION: "reports"
+  RMQ_ADDRESS: "amqp://rabbitmq:5672"
+  WORKER_QUEUE: "workers"
+  ANALYZER_QUEUE: "analyzers"
