@@ -1,11 +1,11 @@
-FORMAT: 1A
+FORMAT: 1A \
 HOST: http://127.0.0.1:3615
 
 # Registry API
 
 WEB Service to store information about current tasks, analyzers and reports
 
-## [GET] ["api/tasks"] - Get all tasks 
+## [GET] [api/tasks] - Get all tasks 
 
 + Response 200 (application/json)
 
@@ -15,6 +15,7 @@ WEB Service to store information about current tasks, analyzers and reports
                  {"uuid":"742f1f74-3436-4475-9dcc-961da9bfa812","info":"Find people"},
            ]
         }
+
 
 ## [GET] [/api/tasks/{uuid}] - Get info about task
 
@@ -53,6 +54,12 @@ WEB Service to store information about current tasks, analyzers and reports
     + info - Information about task
     + jobs - List of analyzers for work
 
++ Response 200 (application/json)
+    + Body
+          {
+            "uuid":"742f1f74-3436-4475-9dcc-961da9bfa812"
+          }
+          
 ## [PATCH] [/api/tasks/{uuid}] - Stop work with task
 
 + Parameters
@@ -101,7 +108,7 @@ WEB Service to store information about current tasks, analyzers and reports
 + Response 200 (application/json)
     + Body
           {
-            "uuid":"742f1f74-3436-4475-9dcc-961da9bfa812"
+            "result":"success"
           }
 
 ## [DELETE] [/api/analyzers/{name}] - Delete analyzer from registry
