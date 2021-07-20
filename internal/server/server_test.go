@@ -51,7 +51,7 @@ func TestCreate(t *testing.T) {
 		body, err := json.Marshal(task1)
 		require.Nil(t, err)
 
-		w := performRequest(router, "POST", "/tasks/create", bytes.NewReader(body))
+		w := performRequest(router, "POST", "/api/tasks", bytes.NewReader(body))
 		require.Equal(t, http.StatusOK, w.Code)
 
 		resp := Response{}
@@ -64,7 +64,7 @@ func TestCreate(t *testing.T) {
 		body, err = json.Marshal(task2)
 		require.Nil(t, err)
 
-		w = performRequest(router, "POST", "/tasks/create", bytes.NewReader(body))
+		w = performRequest(router, "POST", "/api/tasks", bytes.NewReader(body))
 		require.Equal(t, http.StatusOK, w.Code)
 
 		err = json.Unmarshal(w.Body.Bytes(), &resp)
@@ -77,7 +77,7 @@ func TestCreate(t *testing.T) {
 
 func TestGet(t *testing.T) {
 	t.Run("get all", func(t *testing.T) {
-		w := performRequest(router, "GET", "/tasks/get", nil)
+		w := performRequest(router, "GET", "/api/tasks", nil)
 		require.Equal(t, http.StatusOK, w.Code)
 
 		received := []format.Task{}
@@ -99,7 +99,7 @@ func TestGet(t *testing.T) {
 	})
 
 	t.Run("get by UUID", func(t *testing.T) {
-		w := performRequest(router, "GET", "/tasks/get/"+task1.UUID.String(), nil)
+		w := performRequest(router, "GET", "/api/tasks/"+task1.UUID.String(), nil)
 		require.Equal(t, http.StatusOK, w.Code)
 		received := format.Task{}
 		err := json.Unmarshal(w.Body.Bytes(), &received)
@@ -112,10 +112,10 @@ func TestGet(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	t.Run("simple", func(t *testing.T) {
-		w := performRequest(router, "DELETE", "/tasks/delete/"+task1.UUID.String(), nil)
+		w := performRequest(router, "DELETE", "/api/tasks/"+task1.UUID.String(), nil)
 		require.Equal(t, http.StatusOK, w.Code)
 
-		w = performRequest(router, "GET", "/tasks/get", nil)
+		w = performRequest(router, "GET", "/api/tasks", nil)
 		require.Equal(t, http.StatusOK, w.Code)
 
 		received := []format.Task{}
