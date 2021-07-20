@@ -40,8 +40,8 @@ func (s *Server) setupRouter() *gin.Engine {
 	r.DELETE("/api/tasks/:uuid", s.deleteTask)
 
 	r.GET("/api/analyzers", s.getAnalyzers)
+	r.GET("/api/analyzers/:name", s.getAnalyzerByName)
 	r.POST("/api/analyzers", s.createAnalyzer)
-	r.GET("/api/analyzers/:uuid", s.getTaskByUUID)
 	r.DELETE("/api/analyzers/:uuid", s.deleteAnalyzer)
 	return r
 }
