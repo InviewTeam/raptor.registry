@@ -31,20 +31,18 @@ func New(addr string, reg *registry.Registry) *Server {
 func (s *Server) setupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
-	r.POST("/tasks/create", s.createNewTask)
-	r.GET("/tasks/get", s.getTasks)
-	r.DELETE("/tasks/delete/:uuid", s.deleteTask)
-	r.DELETE("/tasks/stop/:uuid", s.stopTask)
-	r.GET("/tasks/get/:uuid", s.getTaskByUUID)
+	r.GET("/api/tasks", s.getTasks)
+	r.POST("/api/tasks", s.createNewTask)
+	r.GET("/api/tasks/:uuid", s.getTaskByUUID)
+	r.GET("/api/tasks/:uuid/report", s.getReportByUUID)
+	r.POST("/api/tasks/:uuid/report", s.addReport)
+	r.PATCH("/api/tasks/:uuid", s.stopTask)
+	r.DELETE("/api/tasks/:uuid", s.deleteTask)
 
-	r.POST("/analyzers/create", s.createAnalyzer)
-	r.GET("/analyzers/get", s.getAnalyzers)
-	r.DELETE("/analyzers/delete/:name", s.deleteAnalyzer)
-	r.GET("/analyzers/get/:name", s.getAnalyzerByName)
-
-	r.POST("/reports/add", s.addReport)
-	r.GET("/reports/get/:uuid", s.getReportByUUID)
-
+	r.GET("/api/analyzers", s.getAnalyzers)
+	r.GET("/api/analyzers/:name", s.getAnalyzerByName)
+	r.POST("/api/analyzers", s.createAnalyzer)
+	r.DELETE("/api/analyzers/:uuid", s.deleteAnalyzer)
 	return r
 }
 
