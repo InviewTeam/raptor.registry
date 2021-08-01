@@ -4,3 +4,5 @@
 !internal/
 !pkg/format/
 !tests/
+!go.mod
+!go.sum
