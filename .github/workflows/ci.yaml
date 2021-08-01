@@ -1,6 +1,8 @@
 name: CI
-on: [push]
-
+on: 
+  pull_request:
+  push:
+    branches: master
 jobs:
   build:
     name: Build
@@ -38,7 +40,7 @@ jobs:
         run: go mod download
       - name: Unit tests
         run: make ut
-  Lint:
+  lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
@@ -66,3 +68,18 @@ jobs:
           make docker && \
           docker tag raptor/registry docker.pkg.github.com/${{ github.repository }}/registry:${GITHUB_REF##*/}-${{ github.sha }} && \
           docker push docker.pkg.github.com/${{ github.repository }}/registry:${GITHUB_REF##*/}-${{ github.sha }}
+  swagger:
+    name: Swagger to Github Pages
+    needs: [publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Swagger UI
+        uses: Legion2/swagger-ui-action@v1
+        with:
+          output: swagger-ui
+          spec-file: docs/swagger.json
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: swagger-ui
