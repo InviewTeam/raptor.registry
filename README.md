@@ -1,4 +1,4 @@
-# Registry
+# Registry [![CI](https://github.com/inview-team/raptor.registry/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/inview-team/raptor.registry/actions/workflows/ci.yaml)
 
 ## Environments
 * REGISTRY_ADDRESS - set this variable for registry addr
