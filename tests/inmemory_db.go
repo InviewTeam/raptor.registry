@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
+	"github.com/inview-team/raptor.registry/internal/app/registry"
+	"github.com/inview-team/raptor.registry/pkg/format"
 )
 
 type InMemoryDB struct {

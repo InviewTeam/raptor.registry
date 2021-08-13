@@ -10,11 +10,11 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/uuid"
+	"github.com/inview-team/raptor.registry/internal/app/registry"
+	"github.com/inview-team/raptor.registry/internal/config"
+	"github.com/inview-team/raptor.registry/pkg/format"
+	"github.com/inview-team/raptor.registry/tests"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
-	"gitlab.com/inview-team/raptor_team/registry/tests"
 )
 
 type Response struct {
@@ -23,7 +23,7 @@ type Response struct {
 
 var (
 	srv = Server{
-		reg: registry.New(&config.Settings{}, tests.NewDB(), &tests.Publisher{}),
+		reg: registry.New(&config.Settings{}, tests.NewDB()),
 	}
 	router = srv.setupRouter()
 

@@ -12,11 +12,10 @@ import (
 	"github.com/caarlos0/env"
 	"github.com/joho/godotenv"
 
-	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/internal/db"
-	"gitlab.com/inview-team/raptor_team/registry/internal/rabbitmq"
-	"gitlab.com/inview-team/raptor_team/registry/internal/server"
+	"github.com/inview-team/raptor.registry/internal/app/registry"
+	"github.com/inview-team/raptor.registry/internal/config"
+	"github.com/inview-team/raptor.registry/internal/db"
+	"github.com/inview-team/raptor.registry/internal/server"
 )
 
 var (
@@ -47,15 +46,7 @@ func main() {
 		log.Fatal(fmt.Errorf("failed to connect to MongoDB: %w", err))
 	}
 
-	pub := rabbitmq.NewPublisher(conf.RMQAddress)
-	err = pub.Connect()
-	if err != nil {
-		log.Fatal(fmt.Errorf("failed to connect publisher to RabbitMQ: %w", err))
-	}
-	defer pub.Close()
-
-	registry := registry.New(&conf, mongo, pub)
-
+	registry := registry.New(&conf, mongo)
 	srv := server.New(conf.RegistryAddress, registry)
 
 	done := make(chan os.Signal, 1)

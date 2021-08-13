@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
-	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
+	"github.com/inview-team/raptor.registry/internal/config"
+	"github.com/inview-team/raptor.registry/pkg/format"
 )
 
 type Storage interface {
@@ -25,23 +25,14 @@ type Storage interface {
 	GetReport(uuid.UUID) (format.Report, error)
 }
 
-type PublisherInterface interface {
-	Connect() error
-	Close() error
-	DeclareQueue(string) error
-	Send([]byte, string) error
-}
-
 type Registry struct {
 	storage Storage
-	rmq     PublisherInterface
 	conf    *config.Settings
 }
 
-func New(conf *config.Settings, st Storage, pub PublisherInterface) *Registry {
+func New(conf *config.Settings, st Storage) *Registry {
 	return &Registry{
 		storage: st,
-		rmq:     pub,
 		conf:    conf,
 	}
 }
@@ -57,7 +48,7 @@ func (r *Registry) CreateTask(task format.Task) (uuid.UUID, error) {
 		return id, err
 
 	}
-	return id, r.rmq.Send(data, r.conf.WorkerQueue)
+	return id, nil
 }
 
 func (r *Registry) DeleteTask(id uuid.UUID) error {
@@ -69,7 +60,7 @@ func (r *Registry) DeleteTask(id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	return r.rmq.Send(req, r.conf.WorkerQueue)
+	return nil
 }
 
 func (r *Registry) GetTaskByUUID(id uuid.UUID) (format.Task, error) {
@@ -89,7 +80,7 @@ func (r *Registry) StopTask(id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-	return r.rmq.Send(req, r.conf.WorkerQueue)
+	return nil
 }
 
 func (r *Registry) GetAnalyzers() ([]format.Analyzer, error) {

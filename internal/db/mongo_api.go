@@ -3,9 +3,9 @@ package db
 import (
 	"context"
 
-	"gitlab.com/inview-team/raptor_team/registry/internal/app/registry"
-	"gitlab.com/inview-team/raptor_team/registry/internal/config"
-	"gitlab.com/inview-team/raptor_team/registry/pkg/format"
+	"github.com/inview-team/raptor.registry/internal/app/registry"
+	"github.com/inview-team/raptor.registry/internal/config"
+	"github.com/inview-team/raptor.registry/pkg/format"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
